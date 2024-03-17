@@ -90,7 +90,7 @@ export default {
           }
         })
         .catch((error) => {
-          console.error("Error de conexión:", error);
+          console.error("Error de conexiónaa:", error);
           this.error = true;
           this.msgError = "Error de conexión con la API";
           Swal.fire({
