@@ -78,7 +78,16 @@ export default {
         .post("http://localhost:8081/api/login", json)
         .then((response) => {
           if (response.data.code === 202) {
-            console.log("OK");
+            localStorage.setItem("token", response.data.token);
+            this.$router.push("dashboard");
+            Swal.fire({
+              position: "top-end",
+              icon: "success",
+              showConfirmButton: false,
+              timer: 1500,
+              width: 400,
+              heightAuto: true,
+            });
           } else {
             this.error = true;
             this.msgError = response.data.message;
