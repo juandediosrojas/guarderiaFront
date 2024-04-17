@@ -1,8 +1,10 @@
 <template>
   <div>
-    <b-navbar type="secondary" variant="info">
+    <b-navbar type="dark" variant="dark">
       <b-navbar-nav>
-        <b-nav-item href="#">Home</b-nav-item>
+        <b-nav-item href="#">
+          <font-awesome-icon :icon="['fas', 'paw']" />
+        </b-nav-item>
         <!-- Navbar dropdowns -->
         <b-nav-item-dropdown text="Clientes" right>
           <b-dropdown-item href="#">Crear</b-dropdown-item>

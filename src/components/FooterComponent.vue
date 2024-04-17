@@ -12,7 +12,7 @@ footer {
     height: 100px;
     bottom: 0;
     width: 100%;
-    background-color: black;
+    background-color: rgb(22, 21, 21);
     color: white;
 }
 </style>

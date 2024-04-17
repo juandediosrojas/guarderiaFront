@@ -77,7 +77,7 @@ export default {
       axios
         .post("http://localhost:8081/api/login", json)
         .then((response) => {
-          if (response.data.code === 202) {
+          if (response.data.code === 200) {
             localStorage.setItem("token", response.data.token);
             this.$router.push("dashboard");
             Swal.fire({
