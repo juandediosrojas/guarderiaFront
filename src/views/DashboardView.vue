@@ -1,6 +1,6 @@
 <template>
   <div>
-    <HeaderComponent />
+    <HeaderComponent/>
 
     <div class="container">
       <br />
@@ -56,7 +56,7 @@ export default {
     HeaderComponent,
     FooterComponent,
   },
-  methods: {
+  methods: {    
     registraSalida(id) {
       Swal.fire({
         title: "¿Estás seguro de registrar la salida de la mascota?",
@@ -74,7 +74,6 @@ export default {
         let dia = ("0" + fecha.getDate()).slice(-2); // Agregar cero delante si el día es menor que 10
         // Formatear la fecha como "yyyy-MM-dd"
         let fechaFormateada = año + "-" + mes + "-" + dia;
-        console.log(fechaFormateada);
         //FIN FORMATO FECHA HOY 
 
         if (result.isConfirmed) {

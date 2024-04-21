@@ -79,7 +79,11 @@ export default {
         .then((response) => {
           if (response.data.code === 200) {
             localStorage.setItem("token", response.data.token);
-            this.$router.push("dashboard");
+            localStorage.setItem("nombreEmpleado", response.data.usuario.empleado_fk.nombres_empleado);           
+            this.$router.push({
+              name :"dashboard",
+              // params: { empleado: response.data.usuario.empleado_fk }
+            });
             Swal.fire({
               position: "top-end",
               icon: "success",
