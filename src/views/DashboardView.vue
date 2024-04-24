@@ -18,10 +18,10 @@
         </thead>
         <tbody>
           <tr v-for="registro in registros" :key="registro.dk">
-            <td>{{ registro.mascota_fk.identifiacion_mascota }}</td>
-            <td>{{ registro.mascota_fk.nombre_mascota }}</td>
-            <td>{{ registro.mascota_fk.especie_mascota }}</td>
-            <td>{{ registro.cliente_fk.nombres_cliente }}</td>
+            <td>{{ registro.mascota_fk.identifiacion }}</td>
+            <td>{{ registro.mascota_fk.nombre }}</td>
+            <td>{{ registro.mascota_fk.especie }}</td>
+            <td>{{ registro.mascota_fk.cliente_fk.nombres_cliente }}</td>
             <td>
               <button
                 title="Registrar Salida Mascota"
@@ -66,20 +66,11 @@ export default {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Si, registrar salida!",
-      }).then((result) => {
-        // INIO FORMATEO FECHA HOY
-        let fecha = new Date();
-        let año = fecha.getFullYear();
-        let mes = ("0" + (fecha.getMonth() + 1)).slice(-2); // Agregar cero delante si el mes es menor que 10
-        let dia = ("0" + fecha.getDate()).slice(-2); // Agregar cero delante si el día es menor que 10
-        // Formatear la fecha como "yyyy-MM-dd"
-        let fechaFormateada = año + "-" + mes + "-" + dia;
-        //FIN FORMATO FECHA HOY 
-
+      }).then((result) => {        
         if (result.isConfirmed) {
           let url = "http://localhost:8081/api/registros/" + id;
           axios
-            .put(url, { fecha_salida: fechaFormateada })
+            .delete(url)
             .then((response) => {
               if (response.data.code === 200) {
                 Swal.fire({

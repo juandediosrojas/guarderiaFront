@@ -18,9 +18,11 @@
           </div>
           <div>
             <b-nav-item-dropdown text="Mascotas" right>
-              <b-dropdown-item href="#">Crear</b-dropdown-item>
+              <b-dropdown-item v-b-modal.crearMascota>Crear</b-dropdown-item>
               <b-dropdown-item href="#">Editar</b-dropdown-item>
-              <b-dropdown-item href="#">Lista de Mascotas</b-dropdown-item>
+              <b-dropdown-item v-b-modal.listarMascotas
+                >Lista de Mascotas</b-dropdown-item
+              >
             </b-nav-item-dropdown>
           </div>
 
@@ -49,12 +51,89 @@
             <b-form-select-option
               v-for="mascota in listaMascotas"
               :key="mascota.dk"
-              :value="mascota.nombre_mascota"
+              :value="mascota.dk"
             >
-              {{ mascota.nombre_mascota }}
+              {{mascota.identifiacion}} - {{ mascota.nombre }}
             </b-form-select-option>
           </b-form-select>
         </div>
+      </b-modal>
+
+      <!-- Modal para agregar mascota -->
+      <b-modal
+        id="crearMascota"
+        title="CREACIÓN DE MASCOTAS"
+        @hidden="clearFormFields()"
+        hide-footer
+      >
+        <form @submit.prevent="saveMascota">
+          <b-form-group
+            label="Identificación"
+            label-for="identificacionMascota"
+          >
+            <b-form-input
+              id="identificacionMascota"
+              v-model="identificacionMascota"
+              type="text"
+              pattern="[0-9]*"
+              maxlength="11"
+              required
+            ></b-form-input>
+          </b-form-group>
+          <b-form-group label="Nombres" label-for="nombresMascota">
+            <b-form-input
+              id="nombresMascota"
+              v-model="nombresMascota"
+              type="text"
+              pattern="[A-Za-z ]*"
+              maxlength="45"
+              required
+            ></b-form-input>
+          </b-form-group>
+          <b-form-group label="Especie" label-for="especie">
+            <b-form-input
+              id="especie"
+              v-model="especie"
+              type="text"
+              pattern="[A-Za-z ]*"
+              maxlength="45"
+              required
+            ></b-form-input>
+          </b-form-group>
+          <b-form-group label="Raza" label-for="Raza">
+            <b-form-input
+              id="Raza"
+              v-model="Raza"
+              type="text"
+              maxlength="45"
+              required
+            ></b-form-input>
+          </b-form-group>
+          <b-form-group label="Cliente" label-for="cliente">
+            <b-form-select v-model="selectedCliente" id="cliente">
+              <template #first>
+                <b-form-select-option :value="null" disabled
+                  >-- Por favor selecciona un cliente para la mascota--</b-form-select-option
+                >
+              </template>
+              <b-form-select-option
+                v-for="cliente in listaClientes"
+                :key="cliente.cliente_dk"
+                :value="cliente.cliente_dk"
+              >
+                {{ cliente.identificacion }} - {{ cliente.nombres_cliente }}
+              </b-form-select-option>
+            </b-form-select> 
+          </b-form-group>
+          <br />
+          <b-row align-h="center">
+            <b-col cols="auto">
+              <b-button type="submit" variant="success">
+                <i class="fa-solid fa-check"></i> CREAR MASCOTA
+              </b-button>
+            </b-col>
+          </b-row>
+        </form>
       </b-modal>
 
       <!-- Modal para agregar cliente -->
@@ -283,6 +362,51 @@
           </tbody>
         </table>
       </b-modal>
+
+      <!-- modal para listar mascotas -->
+      <b-modal
+        size="lg"
+        id="listarMascotas"
+        title="LISTADO DE MASCOTAS"
+        @show="listadoMascotas()"
+        hide-footer
+      >
+        <table class="table table-striped mt-2 table-bordered">
+          <thead>
+            <tr>
+              <th class="col-md-1">ID</th>
+              <th class="col-md-2">NOMBRE</th>
+              <th class="col-md-2">TIPO</th>
+              <th class="col-md-2">RAZA</th>
+              <th class="col-md-4">CLIENTE</th>
+              <th class="col-md-1"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="mascota in listadeMascotas" :key="mascota.dk">
+              <td>{{ mascota.identifiacion }}</td>
+              <td>
+                {{ mascota.nombre }}
+              </td>
+              <td>{{ mascota.especie }}</td>
+              <td>{{ mascota.raza }}</td>
+              <td>
+                {{ mascota.cliente_fk.identificacion }}
+                {{ mascota.cliente_fk.nombres_cliente }}
+              </td>
+              <td>
+                <button
+                  title="Eliminar Cliente"
+                  v-on:click="eliminarMascota(mascota.dk)"
+                >
+                  <font-awesome-icon icon="trash" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </b-modal>
+
     </b-navbar>
   </div>
 </template>
@@ -290,7 +414,6 @@
 <script>
 import axios from "axios";
 import Swal from "sweetalert2";
-// import Swal from "sweetalert2";
 
 export default {
   name: "HeaderComponent",
@@ -299,8 +422,11 @@ export default {
       clienteEncontrado: false,
       nombreEmpleado: "",
       opcionSeleccionada: null,
-      listaClientes: [],
+      selectedCliente: null,
       listaMascotas: [],
+
+      // inicio datos de clientes
+      listaClientes: [],
       clienteDk: "",
       identificacionCliente: "",
       nombresCliente: "",
@@ -308,6 +434,16 @@ export default {
       direccionCliente: "",
       correoCliente: "",
       telefonoCliente: "",
+      // fin datos de clientes
+
+      // inicio datos de mascotas
+      listadeMascotas: [],
+      dkMascota: "",
+      identificacionMascota: "",
+      nombresMascota: "",
+      especie: "",
+      Raza: "",
+      // fin datos de mascotas
     };
   },
   methods: {
@@ -319,14 +455,33 @@ export default {
       this.direccionCliente = "";
       this.correoCliente = "";
       this.telefonoCliente = "";
+      this.identificacionMascota = "";
+      this.nombresMascota = "";
+      this.dkMascota = "";
+      this.especie = "";
+      this.Raza = "";
+      this.selectedCliente = null;
+      this.opcionSeleccionada = null;
       this.clienteEncontrado = false;
     },
+    // funciones clietes
     listadoClientes() {
       let url = "http://localhost:8081/api/clientes";
       axios
         .get(url)
         .then((response) => {
           this.listaClientes = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    listadoMascotas() {
+      let url = "http://localhost:8081/api/mascotas";
+      axios
+        .get(url)
+        .then((response) => {
+          this.listadeMascotas = response.data;
         })
         .catch((error) => {
           console.log(error);
@@ -435,6 +590,59 @@ export default {
           }
         });
     },
+    consultarMascota() {
+      let url =
+        "http://localhost:8081/api/mascotas/" + this.identificacionMascota;
+      axios
+        .get(url)
+        .then((response) => {
+          if (response.status === 200) {
+            if (response.data) {
+              this.dkMascota = response.data.dk;
+              this.identificacionMascota = response.data.identifiacion;
+              this.nombresMascota = response.data.nombre;
+              this.especie = response.data.especie;
+              this.raza = response.data.direccion;
+              this.correoCliente = response.data.correo;
+              const cliente = response.data.cliente_fk;
+              console.log(cliente);
+            } else {
+              Swal.fire({
+                title: "Error",
+                text: "El cliente no fue encontrado",
+                icon: "error",
+              });
+              // Establecer clienteEncontrado en false
+              this.clienteEncontrado = false;
+            }
+          } else {
+            Swal.fire({
+              title: "Error",
+              text: response.statusText,
+              icon: "error",
+            });
+          }
+        })
+        .catch((error) => {
+          // Error al buscar el cliente
+          if (error.response.status === 404) {
+            // Si el error es debido a que no encontro el cliente
+            // Muestra un mensaje de error al usuario
+            Swal.fire({
+              title: "Error",
+              text: error.response.data,
+              icon: "error",
+            });
+          } else {
+            // Si el error es de otro tipo, muestra un mensaje de error genérico
+            Swal.fire({
+              title: "Error",
+              text: "Ha ocurrido un error interno en el servidor",
+              icon: "error",
+            });
+          }
+        });
+    },
     saveCliente() {
       let url = "http://localhost:8081/api/clientes";
       const cliente = {
@@ -450,7 +658,55 @@ export default {
         .then((response) => {
           if (response.status === 200) {
             Swal.fire({
-              title: "Creacion de Cliente",
+              title: "Creacion de Cliente Exitosa",
+              icon: "success",
+            }).then(() => {
+              this.clearFormFields();
+              this.$bvModal.hide("crearCliente");
+            });
+          } else {
+            Swal.fire({
+              title: "Error",
+              text: response.statusText,
+              icon: "error",
+            });
+          }
+        })
+        .catch((error) => {
+          // Si se produce un error
+          if (error.response.status === 400) {
+            // Si el error es debido a la duplicación de un valor único en la base de datos
+            // Muestra un mensaje de error al usuario
+            Swal.fire({
+              title: "Error",
+              text: error.response.data,
+              icon: "error",
+            });
+          } else {
+            // Si el error es de otro tipo, muestra un mensaje de error genérico
+            Swal.fire({
+              title: "Error",
+              text: "Ha ocurrido un error interno en el servidor",
+              icon: "error",
+            });
+          }
+        });
+    },
+    saveMascota(){
+      let url = "http://localhost:8081/api/mascotas";
+      const mascota = {
+        identificacion: this.identificacionCliente,
+        nombre: this.nombresCliente,
+        especie: this.apellidosCliente,
+        raza: this.direccionCliente,
+        cliente_fk: this.correoCliente,
+      };
+      axios
+        .post(url, mascota)
+        .then((response) => {
+          if (response.status === 200) {
+            Swal.fire({
+              title: "Creacion de Cliente Exitosa",
               icon: "success",
             }).then(() => {
               this.clearFormFields();
@@ -507,6 +763,7 @@ export default {
                   icon: "success",
                 }).then(() => {
                   this.$bvModal.hide("listartClientes");
+                  window.location.reload();
                 });
               } else {
                 Swal.fire({
@@ -523,7 +780,7 @@ export default {
                   text: error.response.data,
                   icon: "error",
                 });
-              } else if(error.response.status === 400){
+              } else if (error.response.status === 400) {
                 Swal.fire({
                   title: "Error eliminando cliente",
                   text: error.response.data,
@@ -540,8 +797,66 @@ export default {
         }
       });
     },
+    eliminarMascota(dk) {
+      Swal.fire({
+        title: "¿Estás seguro de elimar a la mascota?",
+        text: "No es posible revertir esto!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "SI, ELIMINAR",
+        cancelButtonText: "NO, MEJOR NO",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          let url = "http://localhost:8081/api/mascotas/" + dk;
+          axios
+            .delete(url)
+            .then((response) => {
+              if (response.status === 200) {
+                Swal.fire({
+                  title: "Mascota eliminada con éxito",
+                  text: response.data,
+                  icon: "success",
+                }).then(() => {
+                  this.$bvModal.hide("listarMascotas");
+                  window.location.reload();
+                });
+              } else {
+                Swal.fire({
+                  title: "Error",
+                  text: response.data,
+                  icon: "error",
+                });
+              }
+            })
+            .catch((error) => {
+              if (error.response.status === 404) {
+                Swal.fire({
+                  title: "Error eliminando mascota",
+                  text: error.response.data,
+                  icon: "error",
+                });
+              } else if (error.response.status === 400) {
+                Swal.fire({
+                  title: "Error eliminando mascota",
+                  text: error.response.data,
+                  icon: "error",
+                });
+              } else {
+                Swal.fire({
+                  title: "Error eliminando mascota",
+                  text: "Ha ocurrido un error interno en el servidor",
+                  icon: "error",
+                });
+              }
+            });
+        }
+      });
+    },
+
     abrirModal() {
-      let url = "http://localhost:8081/api/mascotas";
+      let url = "http://localhost:8081/api/mascotasSinRegistro";
       axios.get(url).then((response) => {
         this.listaMascotas = response.data;
       });
@@ -549,10 +864,40 @@ export default {
     },
     ingresarMascota() {
       console.log(this.opcionSeleccionada);
+      let url = "http://localhost:8081/api/registros";
+      axios
+        .post(url, { mascota_fk: this.opcionSeleccionada })
+        .then((response) => {
+          if (response.data.code === 200) {
+            Swal.fire({
+              title: "Mascota ingresada",
+              text: response.data.message,
+              icon: "success",
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              title: "Error",
+              text: response.data.message,
+              icon: "error",
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            title: "Error",
+            text: error.response.data,
+            icon: "error",
+          });
+        });
     },
+    // fucniones mascotas
   },
   mounted() {
     this.nombreEmpleado = localStorage.getItem("nombreEmpleado");
+    this.listadoClientes();
   },
 };
 </script>
