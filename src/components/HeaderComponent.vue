@@ -862,7 +862,7 @@ export default {
         .then((response) => {
           if (response.status === 200) {
             Swal.fire({
-              title: "Creacion de Cliente Exitosa",
+              title: "Creacion de Mascota Exitosa",
               icon: "success",
             }).then(() => {
               this.clearFormFields();
@@ -975,7 +975,6 @@ export default {
                   icon: "success",
                 }).then(() => {
                   this.$bvModal.hide("listarMascotas");
-                  window.location.reload();
                 });
               } else {
                 Swal.fire({
