@@ -1,6 +1,6 @@
 <template>
   <div>
-    <HeaderComponent/>
+    <HeaderComponent :consultarMascotas="consultarMascotas"/>
 
     <div class="container">
       <br />
@@ -56,7 +56,18 @@ export default {
     HeaderComponent,
     FooterComponent,
   },
-  methods: {    
+  methods: {  
+    consultarMascotas(){
+      let url = "http://localhost:8081/api/registros";
+    axios
+      .get(url)
+      .then((response) => {
+        this.registros = response.data;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    },  
     registraSalida(id) {
       Swal.fire({
         title: "¿Estás seguro de registrar la salida de la mascota?",
@@ -72,18 +83,18 @@ export default {
           axios
             .delete(url)
             .then((response) => {
-              if (response.data.code === 200) {
+              if (response.status === 200) {
                 Swal.fire({
                   title: "Salida registrada",
-                  text: response.data.message,
+                  text: response.data,
                   icon: "success",
                 }).then(() => {
-                  window.location.reload();
+                  this.consultarMascotas();
                 });
               } else {
                 Swal.fire({
                   title: "Error",
-                  text: response.data.message,
+                  text: response.data,
                   icon: "error",
                 });
               }
@@ -101,15 +112,7 @@ export default {
     },
   },
   mounted() {
-    let url = "http://localhost:8081/api/registros";
-    axios
-      .get(url)
-      .then((response) => {
-        this.registros = response.data;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    this.consultarMascotas();
   },
 };
 </script>
